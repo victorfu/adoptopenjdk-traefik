@@ -32,6 +32,5 @@ RUN mv dynamic_conf.toml $TRAEFIK_CONFIG_DIR
 
 RUN echo "Installing traefik as systemd service"
 RUN mv traefik.service /etc/systemd/system
-RUN systemctl daemon-reload
 RUN service traefik start
 RUN systemctl enable traefik.service
