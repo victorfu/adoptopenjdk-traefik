@@ -1,0 +1,9 @@
+[http.routers]
+  [http.routers.web-http]
+    rule = "HostRegexp(`*`)"
+    service = "web-service"
+    entryPoints = ["http"]
+
+[http.services]
+  [[http.services.web-service.loadBalancer.servers]]
+    url = "http://localhost:8080"

@@ -1,0 +1,27 @@
+[global]
+  checkNewVersion = true
+  sendAnonymousUsage = false
+
+[log]
+  level = "DEBUG"
+  format = "json"
+
+[accessLog]
+  filePath = "/var/log/traefik/access.log"
+  bufferingSize = 200
+
+[entryPoints]
+  [entryPoints.http]
+  address = ":8080"
+  [entryPoints.dashboard]
+  address = ":8083"
+
+[api]
+  entryPoint = "dashboard"
+  dashboard = true
+  debug = true
+  insecure = true
+
+[providers]
+  [providers.file]
+    filename = "/etc/traefik/dynamic_conf.toml"
