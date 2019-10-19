@@ -13,24 +13,40 @@ COPY traefik.service .
 
 RUN  apt-get update \
   && apt-get install -y wget \
-  && apt-get install -y systemd
+  && apt-get install -y systemd \
+  && apt-get clean \
+  && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-RUN echo "Installing traefik into /usr/bin"
-RUN wget -c https://github.com/containous/traefik/releases/download/v2.0.0/traefik_v2.0.0_linux_amd64.tar.gz -O - | tar -xz
-RUN mv traefik /usr/bin
+RUN cd /lib/systemd/system/sysinit.target.wants/ \
+    && ls | grep -v systemd-tmpfiles-setup | xargs rm -f $1
 
-RUN echo "Creating traefik configuration directory"
+RUN rm -f /lib/systemd/system/multi-user.target.wants/* \
+    /etc/systemd/system/*.wants/* \
+    /lib/systemd/system/local-fs.target.wants/* \
+    /lib/systemd/system/sockets.target.wants/*udev* \
+    /lib/systemd/system/sockets.target.wants/*initctl* \
+    /lib/systemd/system/basic.target.wants/* \
+    /lib/systemd/system/anaconda.target.wants/* \
+    /lib/systemd/system/plymouth* \
+    /lib/systemd/system/systemd-update-utmp*
+
+RUN wget --quiet -c https://github.com/containous/traefik/releases/download/v2.0.0/traefik_v2.0.0_linux_amd64.tar.gz -O - | tar -xz \
+  && mv traefik /usr/bin \
+  && chmod +x /usr/bin/traefik
+
 RUN mkdir -p /etc/traefik
 
-RUN echo "Installing traefik.toml into /etc/traefik"
-RUN chmod 644 traefik.toml
-RUN mv traefik.toml $TRAEFIK_CONFIG_DIR
+RUN chmod 644 traefik.toml \
+    && mv traefik.toml $TRAEFIK_CONFIG_DIR
 
-RUN echo "Installing dynamic_conf.toml into /etc/traefik"
-RUN chmod 644 dynamic_conf.toml
-RUN mv dynamic_conf.toml $TRAEFIK_CONFIG_DIR
+RUN chmod 644 dynamic_conf.toml \
+    && mv dynamic_conf.toml $TRAEFIK_CONFIG_DIR
 
-RUN echo "Installing traefik as systemd service"
-RUN mv traefik.service /etc/systemd/system
+RUN chmod 644 traefik.service \
+    &&chown root:root traefik.service \
+    && mv traefik.service /etc/systemd/system
+
+RUN systemctl daemon-reload
 RUN service traefik start
-RUN systemctl enable traefik.service
+
+VOLUME [ "/sys/fs/cgroup" ]
