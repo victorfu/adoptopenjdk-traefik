@@ -11,6 +11,9 @@ COPY traefik.toml .
 COPY dynamic_conf.toml .
 COPY traefik.service .
 
+RUN  apt-get update \
+  && apt-get install -y wget
+
 RUN echo "Installing traefik into /usr/bin"
 RUN wget -c https://github.com/containous/traefik/releases/download/v2.0.0/traefik_v2.0.0_linux_amd64.tar.gz -O - | tar -xz
 RUN mv traefik /usr/bin
